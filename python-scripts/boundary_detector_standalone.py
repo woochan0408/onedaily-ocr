@@ -123,35 +123,41 @@ class BoundaryDetector:
         # 코너 정렬
         ordered_corners = self.order_corners(corners)
 
-        # 출력 디렉토리 생성
-        os.makedirs(output_dir, exist_ok=True)
-
-        # 경계 이미지 저장
+        # 시간 기반 디렉토리 생성
         now = datetime.now()
-        time_str = now.strftime("%H_%M")
+        time_str = now.strftime("%m%d_%H%M")  # 월일_시분
         base_name = Path(image_path).stem
+
+        # 실행별 디렉토리 생성: imageName_1025_1504
+        result_dir = os.path.join(output_dir, f"{base_name}_{time_str}")
+        os.makedirs(result_dir, exist_ok=True)
 
         # 경계 그리기
         boundary_image = self.draw_boundary(image, ordered_corners)
-        boundary_path = os.path.join(output_dir, f"{base_name}_{time_str}_boundary.jpg")
+        boundary_path = os.path.join(result_dir, "boundary.jpg")
         cv2.imwrite(boundary_path, boundary_image)
 
-        # 좌표 저장
-        coords_path = os.path.join(output_dir, f"{base_name}_{time_str}_corners.txt")
-        with open(coords_path, 'w') as f:
-            f.write(f"Image: {image_path}\n")
-            f.write(f"Time: {now.strftime('%Y-%m-%d %H:%M:%S')}\n")
-            f.write(f"Method: DocAligner\n")
-            f.write("Corners (x, y):\n")
-            for i, corner in enumerate(ordered_corners):
-                f.write(f"  Corner {i + 1}: ({corner[0]:.2f}, {corner[1]:.2f})\n")
+        # 좌표 JSON 저장
+        coords_json_path = os.path.join(result_dir, "result.json")
+        coords_data = {
+            "imagePath": image_path,
+            "timestamp": now.strftime('%Y-%m-%d %H:%M:%S'),
+            "method": "DocAligner",
+            "corners": [
+                {"index": i + 1, "x": float(corner[0]), "y": float(corner[1])}
+                for i, corner in enumerate(ordered_corners)
+            ]
+        }
+        with open(coords_json_path, 'w', encoding='utf-8') as f:
+            json.dump(coords_data, f, ensure_ascii=False, indent=2)
 
         # 성공 결과 반환
         return {
             "success": True,
             "corners": ordered_corners.tolist(),
             "boundaryImage": boundary_path,
-            "cornersFile": coords_path,
+            "resultJson": coords_json_path,
+            "resultDirectory": result_dir,
             "timestamp": now.isoformat(),
             "imageShape": list(image.shape)
         }
