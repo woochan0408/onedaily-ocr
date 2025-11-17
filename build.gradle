@@ -1,0 +1,44 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.5.7'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.onedaily'
+version = '0.0.1-SNAPSHOT'
+description = 'onedaily backend server'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter'
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// OpenCV for Java (JavaCV)
+	implementation 'org.bytedeco:javacv-platform:1.5.10'
+	implementation 'org.bytedeco:opencv-platform:4.9.0-1.5.10'
+
+	// Google Cloud Vision API
+	implementation 'com.google.cloud:google-cloud-vision:3.44.0'
+
+	// OpenAI Java Client
+	implementation 'com.theokanning.openai-gpt3-java:service:0.18.2'
+
+	// Environment variables
+	implementation 'io.github.cdimascio:dotenv-java:3.0.0'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
